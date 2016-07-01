@@ -10,6 +10,7 @@
 		838FB5691D26A45E0065A950 /* QRIO.h in Headers */ = {isa = PBXBuildFile; fileRef = 838FB5681D26A45E0065A950 /* QRIO.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		838FB5701D26A45E0065A950 /* QRIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 838FB5651D26A45E0065A950 /* QRIO.framework */; };
 		838FB5751D26A45E0065A950 /* QRIOTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 838FB5741D26A45E0065A950 /* QRIOTests.swift */; };
+		838FB5801D26A5120065A950 /* QRIO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 838FB57F1D26A5120065A950 /* QRIO.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +30,7 @@
 		838FB56F1D26A45E0065A950 /* QRIOTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QRIOTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		838FB5741D26A45E0065A950 /* QRIOTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRIOTests.swift; sourceTree = "<group>"; };
 		838FB5761D26A45E0065A950 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		838FB57F1D26A5120065A950 /* QRIO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QRIO.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +73,7 @@
 		838FB5671D26A45E0065A950 /* QRIO */ = {
 			isa = PBXGroup;
 			children = (
+				838FB57F1D26A5120065A950 /* QRIO.swift */,
 				838FB5681D26A45E0065A950 /* QRIO.h */,
 				838FB56A1D26A45E0065A950 /* Info.plist */,
 			);
@@ -194,6 +197,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				838FB5801D26A5120065A950 /* QRIO.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -310,6 +314,7 @@
 		838FB57A1D26A45E0065A950 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -320,12 +325,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.nodes.QRIO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
 		838FB57B1D26A45E0065A950 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -378,6 +385,7 @@
 				838FB57B1D26A45E0065A950 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		838FB57C1D26A45E0065A950 /* Build configuration list for PBXNativeTarget "QRIOTests" */ = {
 			isa = XCConfigurationList;
@@ -386,6 +394,7 @@
 				838FB57E1D26A45E0065A950 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
