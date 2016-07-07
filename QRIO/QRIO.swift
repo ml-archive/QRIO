@@ -1,6 +1,6 @@
 //
 //  QRIO.swift
-//  Spenn
+//  Nodes
 //
 //  Created by Chris on 30/06/16.
 //  Copyright © 2016 Nodes. All rights reserved.
@@ -42,8 +42,8 @@ class QRIO: NSObject, AVCaptureMetadataOutputObjectsDelegate {
         do {
             let input = try AVCaptureDeviceInput(device: device)
             session?.addInput(input)
-        } catch let error {
-            print("Error: \(error)")
+        } catch {
+            // Trying to run in simulator
             return
         }
         
@@ -61,6 +61,9 @@ class QRIO: NSObject, AVCaptureMetadataOutputObjectsDelegate {
             previewLayer!.videoGravity = AVLayerVideoGravityResizeAspectFill
             previewContainer.layer.addSublayer(previewLayer!)
         }
+        if let rectOfInterest = rectOfInterest, previewLayer = previewLayer {
+            output.rectOfInterest = previewLayer.metadataOutputRectOfInterestForRect(rectOfInterest)
+        }
     }
     
     func captureOutput(captureOutput: AVCaptureOutput!, didOutputMetadataObjects metadataObjects: [AnyObject]!, fromConnection connection: AVCaptureConnection!) {
@@ -71,7 +74,7 @@ class QRIO: NSObject, AVCaptureMetadataOutputObjectsDelegate {
             }
         }
         if let code = QRCode {
-            imageScanCompletionBlock?(string: code)           
+            imageScanCompletionBlock?(string: code)
         }
     }
     
