@@ -9,33 +9,14 @@
 import UIKit
 import AVFoundation
 
-class QRIO: NSObject, AVCaptureMetadataOutputObjectsDelegate {
+public class QRIn: NSObject, AVCaptureMetadataOutputObjectsDelegate {
     private var session: AVCaptureSession?
     private var previewLayer: AVCaptureVideoPreviewLayer?
     
-    var imageScanCompletionBlock: ((string: String) -> ())?
+    public var imageScanCompletionBlock: ((string: String) -> ())?
     
-    static func QRImageFromString(string: String, containingViewSize: CGSize? = nil, correctionLevel: String = "L") -> UIImage? {
-        let stringData = string.dataUsingEncoding(NSISOLatin1StringEncoding)
-        let filter = CIFilter(name: "CIQRCodeGenerator")
-        filter?.setValue(stringData, forKey: "inputMessage")
-        filter?.setValue(correctionLevel, forKey: "inputCorrectionLevel")
-        
-        guard let resultImage = filter?.outputImage else { return nil }
-        
-        var scaleX = resultImage.extent.size.width
-        var scaleY = resultImage.extent.size.height
-        if let size = containingViewSize {
-            scaleX = size.width / resultImage.extent.size.width
-            scaleY = size.height / resultImage.extent.size.height
-        }
-        
-        let qrImage = resultImage.imageByApplyingTransform(CGAffineTransformMakeScale(scaleX, scaleY))
-        return UIImage(CIImage: qrImage)
-        
-    }
     
-    func scanForQRImage(previewIn previewContainer: UIView? = nil, rectOfInterest: CGRect? = nil, completion: ((string: String) -> ())) {
+    public func scanForQRImage(previewIn previewContainer: UIView? = nil, rectOfInterest: CGRect? = nil, completion: ((string: String) -> ())) {
         session = AVCaptureSession()
         let device = AVCaptureDevice.defaultDeviceWithMediaType(AVMediaTypeVideo)
         
@@ -66,7 +47,7 @@ class QRIO: NSObject, AVCaptureMetadataOutputObjectsDelegate {
         }
     }
     
-    func captureOutput(captureOutput: AVCaptureOutput!, didOutputMetadataObjects metadataObjects: [AnyObject]!, fromConnection connection: AVCaptureConnection!) {
+    public func captureOutput(captureOutput: AVCaptureOutput!, didOutputMetadataObjects metadataObjects: [AnyObject]!, fromConnection connection: AVCaptureConnection!) {
         var QRCode: String?
         for metadata in metadataObjects as! [AVMetadataObject] {
             if metadata.type == AVMetadataObjectTypeQRCode {
@@ -78,10 +59,31 @@ class QRIO: NSObject, AVCaptureMetadataOutputObjectsDelegate {
         }
     }
     
-    func finish() {
+    public func finish() {
         imageScanCompletionBlock = nil
         session?.stopRunning()
         previewLayer?.removeFromSuperlayer()
     }
 }
 
+public enum QROut {
+    public static func QRImageFromString(string: String, containingViewSize: CGSize? = nil, correctionLevel: String = "L") -> UIImage? {
+        let stringData = string.dataUsingEncoding(NSISOLatin1StringEncoding)
+        let filter = CIFilter(name: "CIQRCodeGenerator")
+        filter?.setValue(stringData, forKey: "inputMessage")
+        filter?.setValue(correctionLevel, forKey: "inputCorrectionLevel")
+        
+        guard let resultImage = filter?.outputImage else { return nil }
+        
+        var scaleX = resultImage.extent.size.width
+        var scaleY = resultImage.extent.size.height
+        if let size = containingViewSize {
+            scaleX = size.width / resultImage.extent.size.width
+            scaleY = size.height / resultImage.extent.size.height
+        }
+        
+        let qrImage = resultImage.imageByApplyingTransform(CGAffineTransformMakeScale(scaleX, scaleY))
+        return UIImage(CIImage: qrImage)
+        
+    }
+}
