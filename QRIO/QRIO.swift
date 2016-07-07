@@ -9,7 +9,7 @@
 import UIKit
 import AVFoundation
 
-public class QRIn: NSObject, AVCaptureMetadataOutputObjectsDelegate {
+public class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
     private var session: AVCaptureSession?
     private var previewLayer: AVCaptureVideoPreviewLayer?
     
@@ -66,7 +66,8 @@ public class QRIn: NSObject, AVCaptureMetadataOutputObjectsDelegate {
     }
 }
 
-public enum QROut {
+
+public extension UIImage {
     public static func QRImageFromString(string: String, containingViewSize: CGSize? = nil, correctionLevel: String = "L") -> UIImage? {
         let stringData = string.dataUsingEncoding(NSISOLatin1StringEncoding)
         let filter = CIFilter(name: "CIQRCodeGenerator")
