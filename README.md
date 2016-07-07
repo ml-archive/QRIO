@@ -45,7 +45,7 @@ You will need to create an instance of QRIO and maintain a strong reference to i
 let qrio = QRIO()
 
 func scanForQR() {
-	qrio.scanForQRImage(previewIn: previewContainer) { (string) in
+	qrio.scanForQRImage() { (string) in
 		print(string) // Prints "Hello World!" when using the QR codes above
 	}
 }
