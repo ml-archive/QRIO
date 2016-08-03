@@ -19,7 +19,7 @@ github "nodes-ios/QRIO"
 It's as easy as
 
 ~~~swift
-let image = QRIO.QRImageFromString("Hello World!")
+let image = UIImage.QRImageFromString("Hello World!")
 ~~~
 
 This will return a UIImage: 
@@ -29,7 +29,7 @@ This will return a UIImage:
 You can also adjust the size of the generated image, which will give you a clearer image, and the correction level, which adds more error protection, by using the optional parameters:
 
 ~~~swift
-let image = QRIO.QRImageFromString("Hello World!", 
+let image = UIImage.QRImageFromString("Hello World!", 
 				containingViewSize: imageView.bounds.size, 
 					correctionLevel: "M")
 ~~~
@@ -42,7 +42,7 @@ let image = QRIO.QRImageFromString("Hello World!",
 You will need to create an instance of QRIO and maintain a strong reference to it:
 
 ~~~swift
-let qrio = QRIO()
+let qrio = QRInput()
 
 func scanForQR() {
 	qrio.scanForQRImage() { (string) in
@@ -54,7 +54,7 @@ func scanForQR() {
 You can optionally pass a view to display the preview video in, and also a rect of interest to focus the detection. 
 
 ~~~swift
-let qrio = QRIO()
+let qrio = QRInput()
 
 func scanForQR() {
 	qrio.scanForQRImage(previewIn: previewContainer, rectOfInterest: hotspotView.frame) { (string) in
