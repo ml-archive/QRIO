@@ -35,13 +35,17 @@ public class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 		
 		imageScanCompletionBlock = completion
 		
-		session?.startRunning()
 		if let previewContainer = previewContainer {
 			previewLayer = AVCaptureVideoPreviewLayer(session: session)
+			previewContainer.layer.addSublayer(previewLayer!)
 			previewLayer!.frame = previewContainer.bounds
 			previewLayer!.videoGravity = AVLayerVideoGravityResizeAspectFill
-			previewContainer.layer.addSublayer(previewLayer!)
+			
 		}
+		dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0)) { [weak self] in
+			self?.session?.startRunning()
+		}
+		
 		if let rectOfInterest = rectOfInterest, previewLayer = previewLayer {
 			output.rectOfInterest = previewLayer.metadataOutputRectOfInterestForRect(rectOfInterest)
 		}
@@ -61,8 +65,17 @@ public class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 	
 	public func finish() {
 		imageScanCompletionBlock = nil
-		session?.stopRunning()
+		if let session = session {
+			session.stopRunning()
+			for input in session.inputs{
+				session.removeInput(input as! AVCaptureInput)
+			}
+			for output in session.outputs{
+				session.removeOutput(output as! AVCaptureOutput)
+			}
+		}
 		previewLayer?.removeFromSuperlayer()
+		previewLayer = nil
 	}
 }
 
