@@ -98,7 +98,9 @@ public extension UIImage {
 		
 		let qrImage = resultImage.imageByApplyingTransform(CGAffineTransformMakeScale(scaleX, scaleY))
 		let context = CIContext(options: nil)
-		let tempImage: CGImageRef = context.createCGImage(qrImage, fromRect: qrImage.extent)
-		return UIImage(CGImage: tempImage)
+		if let tempImage: CGImageRef = context.createCGImage(qrImage, fromRect: qrImage.extent) {
+			return UIImage(CGImage: tempImage)
+		}
+		return nil
 	}
 }
