@@ -8,6 +8,7 @@
 
 import UIKit
 import AVFoundation
+import CoreImage
 
 public class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 	private var session: AVCaptureSession?
@@ -97,7 +98,7 @@ public extension UIImage {
 		}
 		
 		let qrImage = resultImage.imageByApplyingTransform(CGAffineTransformMakeScale(scaleX, scaleY))
-		let context = CIContext(options: nil)
+		let context = CIContext()
 		if let tempImage: CGImageRef = context.createCGImage(qrImage, fromRect: qrImage.extent) {
 			return UIImage(CGImage: tempImage)
 		}
