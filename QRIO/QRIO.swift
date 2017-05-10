@@ -10,16 +10,16 @@ import UIKit
 import AVFoundation
 import CoreImage
 
-public class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
-	private var session: AVCaptureSession?
-	private var previewLayer: AVCaptureVideoPreviewLayer?
+open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
+	fileprivate var session: AVCaptureSession?
+	fileprivate var previewLayer: AVCaptureVideoPreviewLayer?
 	
-	public var imageScanCompletionBlock: ((string: String) -> ())?
+	open var imageScanCompletionBlock: ((_ string: String) -> ())?
 	
 	
-	public func scanForQRImage(previewIn previewContainer: UIView? = nil, rectOfInterest: CGRect? = nil, completion: ((string: String) -> ())) {
+	open func scanForQRImage(previewIn previewContainer: UIView? = nil, rectOfInterest: CGRect? = nil, completion: @escaping ((_ string: String) -> ())) {
 		session = AVCaptureSession()
-		let device = AVCaptureDevice.defaultDeviceWithMediaType(AVMediaTypeVideo)
+		let device = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeVideo)
 		
 		do {
 			let input = try AVCaptureDeviceInput(device: device)
@@ -30,7 +30,7 @@ public class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 		}
 		
 		let output = AVCaptureMetadataOutput()
-		output.setMetadataObjectsDelegate(self, queue: dispatch_get_main_queue())
+		output.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
 		session?.addOutput(output)
 		output.metadataObjectTypes = [AVMetadataObjectTypeQRCode]
 		
@@ -43,16 +43,16 @@ public class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 			previewLayer!.videoGravity = AVLayerVideoGravityResizeAspectFill
 			
 		}
-		dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0)) { [weak self] in
+		DispatchQueue.global(qos: DispatchQoS.QoSClass.userInitiated).async { [weak self] in
 			self?.session?.startRunning()
 		}
 		
-		if let rectOfInterest = rectOfInterest, previewLayer = previewLayer {
-			output.rectOfInterest = previewLayer.metadataOutputRectOfInterestForRect(rectOfInterest)
+		if let rectOfInterest = rectOfInterest, let previewLayer = previewLayer {
+			output.rectOfInterest = previewLayer.metadataOutputRectOfInterest(for: rectOfInterest)
 		}
 	}
 	
-	public func captureOutput(captureOutput: AVCaptureOutput!, didOutputMetadataObjects metadataObjects: [AnyObject]!, fromConnection connection: AVCaptureConnection!) {
+	open func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputMetadataObjects metadataObjects: [Any]!, from connection: AVCaptureConnection!) {
 		var QRCode: String?
 		for metadata in metadataObjects as! [AVMetadataObject] {
 			if metadata.type == AVMetadataObjectTypeQRCode {
@@ -60,11 +60,11 @@ public class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 			}
 		}
 		if let code = QRCode {
-			imageScanCompletionBlock?(string: code)
+			imageScanCompletionBlock?(code)
 		}
 	}
 	
-	public func finish() {
+	open func finish() {
 		imageScanCompletionBlock = nil
 		if let session = session {
 			session.stopRunning()
@@ -82,9 +82,9 @@ public class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 
 
 public extension UIImage {
-	public static func QRImageFromString(string: String, containingViewSize: CGSize? = nil, correctionLevel: String = "L") -> UIImage? {
-		let stringData = string.dataUsingEncoding(NSISOLatin1StringEncoding)
-		let filter = CIFilter(name: "CIQRCodeGenerator")
+	public static func QRImageFrom(string: String, containingViewSize: CGSize? = nil, correctionLevel: String = "L") -> UIImage? {
+		let stringData = string.data(using: String.Encoding.isoLatin1)
+        let filter = CIFilter(name: "CICode128BarcodeGenerator")
 		filter?.setValue(stringData, forKey: "inputMessage")
 		filter?.setValue(correctionLevel, forKey: "inputCorrectionLevel")
 		
@@ -97,10 +97,10 @@ public extension UIImage {
 			scaleY = size.height / resultImage.extent.size.height
 		}
 		
-		let qrImage = resultImage.imageByApplyingTransform(CGAffineTransformMakeScale(scaleX, scaleY))
+		let qrImage = resultImage.applying(CGAffineTransform(scaleX: scaleX, y: scaleY))
 		let context = CIContext()
-		if let tempImage: CGImageRef = context.createCGImage(qrImage, fromRect: qrImage.extent) {
-			return UIImage(CGImage: tempImage)
+		if let tempImage: CGImage = context.createCGImage(qrImage, from: qrImage.extent) {
+			return UIImage(cgImage: tempImage)
 		}
 		return nil
 	}
