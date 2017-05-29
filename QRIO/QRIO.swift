@@ -84,7 +84,7 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 public extension UIImage {
 	public static func QRImageFrom(string: String, containingViewSize: CGSize? = nil, correctionLevel: String = "L") -> UIImage? {
 		let stringData = string.data(using: String.Encoding.isoLatin1)
-        let filter = CIFilter(name: "CICode128BarcodeGenerator")
+        let filter = CIFilter(name: "CIQRCodeGenerator")
 		filter?.setValue(stringData, forKey: "inputMessage")
 		filter?.setValue(correctionLevel, forKey: "inputCorrectionLevel")
 		
