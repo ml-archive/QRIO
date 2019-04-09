@@ -18,12 +18,13 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 	
 	
 	open func scanForQRImage(previewIn previewContainer: UIView? = nil, rectOfInterest: CGRect? = nil, completion: @escaping ((_ string: String) -> ())) {
-		session = AVCaptureSession()
-		let device = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeVideo)
+		let session = AVCaptureSession()
+        self.session = session
+        guard let device = AVCaptureDevice.default(for: AVMediaType.video) else { return }
 		
 		do {
 			let input = try AVCaptureDeviceInput(device: device)
-			session?.addInput(input)
+			session.addInput(input)
 		} catch {
 			// Trying to run in simulator
 			return
@@ -31,8 +32,8 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 		
 		let output = AVCaptureMetadataOutput()
 		output.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
-		session?.addOutput(output)
-		output.metadataObjectTypes = [AVMetadataObjectTypeQRCode]
+		session.addOutput(output)
+		output.metadataObjectTypes = [AVMetadataObject.ObjectType.qr]
 		
 		imageScanCompletionBlock = completion
 		
@@ -40,7 +41,7 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 			previewLayer = AVCaptureVideoPreviewLayer(session: session)
 			previewContainer.layer.addSublayer(previewLayer!)
 			previewLayer!.frame = previewContainer.bounds
-			previewLayer!.videoGravity = AVLayerVideoGravityResizeAspectFill
+			previewLayer!.videoGravity = .resizeAspectFill
 			
 		}
 		DispatchQueue.global(qos: DispatchQoS.QoSClass.userInitiated).async { [weak self] in
@@ -48,14 +49,14 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 		}
 		
 		if let rectOfInterest = rectOfInterest, let previewLayer = previewLayer {
-			output.rectOfInterest = previewLayer.metadataOutputRectOfInterest(for: rectOfInterest)
+			output.rectOfInterest = previewLayer.metadataOutputRectConverted(fromLayerRect: rectOfInterest)
 		}
 	}
 	
-	open func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputMetadataObjects metadataObjects: [Any]!, from connection: AVCaptureConnection!) {
+	open func metadataOutput(_ captureOutput: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
 		var QRCode: String?
-		for metadata in metadataObjects as! [AVMetadataObject] {
-			if metadata.type == AVMetadataObjectTypeQRCode {
+		for metadata in metadataObjects {
+			if metadata.type == AVMetadataObject.ObjectType.qr {
 				QRCode = (metadata as! AVMetadataMachineReadableCodeObject).stringValue
 			}
 		}
@@ -69,10 +70,10 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 		if let session = session {
 			session.stopRunning()
 			for input in session.inputs{
-				session.removeInput(input as! AVCaptureInput)
+				session.removeInput(input )
 			}
 			for output in session.outputs{
-				session.removeOutput(output as! AVCaptureOutput)
+				session.removeOutput(output )
 			}
 		}
 		previewLayer?.removeFromSuperlayer()
@@ -82,7 +83,7 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 
 
 public extension UIImage {
-	public static func QRImageFrom(string: String, containingViewSize: CGSize? = nil, correctionLevel: String = "L") -> UIImage? {
+	static func QRImageFrom(string: String, containingViewSize: CGSize? = nil, correctionLevel: String = "L") -> UIImage? {
 		let stringData = string.data(using: String.Encoding.isoLatin1)
         let filter = CIFilter(name: "CIQRCodeGenerator")
 		filter?.setValue(stringData, forKey: "inputMessage")
@@ -97,7 +98,7 @@ public extension UIImage {
 			scaleY = size.height / resultImage.extent.size.height
 		}
 		
-		let qrImage = resultImage.applying(CGAffineTransform(scaleX: scaleX, y: scaleY))
+		let qrImage = resultImage.transformed(by: CGAffineTransform(scaleX: scaleX, y: scaleY))
 		let context = CIContext()
 		if let tempImage: CGImage = context.createCGImage(qrImage, from: qrImage.extent) {
 			return UIImage(cgImage: tempImage)
