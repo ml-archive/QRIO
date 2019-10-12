@@ -16,8 +16,14 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 	
 	open var imageScanCompletionBlock: ((_ string: String) -> ())?
 	
-	
-	open func scanForQRImage(previewIn previewContainer: UIView? = nil, rectOfInterest: CGRect? = nil, completion: @escaping ((_ string: String) -> ())) {
+	private let barCodeMetaType: [AVMetadataObject.ObjectType] = [
+        .qr,
+        .code128,
+        .pdf417,
+        .aztec
+    ]
+    
+	open func scanForBarcodeImage(previewIn previewContainer: UIView? = nil, rectOfInterest: CGRect? = nil, completion: @escaping ((_ string: String) -> ())) {
 		let session = AVCaptureSession()
         self.session = session
         guard let device = AVCaptureDevice.default(for: AVMediaType.video) else { return }
@@ -54,16 +60,16 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 	}
 	
 	open func metadataOutput(_ captureOutput: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
-		var QRCode: String?
-		for metadata in metadataObjects {
-			if metadata.type == AVMetadataObject.ObjectType.qr {
-				QRCode = (metadata as! AVMetadataMachineReadableCodeObject).stringValue
-			}
-		}
-		if let code = QRCode {
-			imageScanCompletionBlock?(code)
-		}
-	}
+        var QRCode: String?
+        for metadata in metadataObjects {
+            if barCodeMetaType.contains(metadata.type) {
+                QRCode = (metadata as! AVMetadataMachineReadableCodeObject).stringValue
+            }
+        }
+        if let code = QRCode {
+            imageScanCompletionBlock?(code)
+        }
+    }
 	
 	open func finish() {
 		imageScanCompletionBlock = nil
@@ -81,28 +87,48 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 	}
 }
 
+public enum BarCode: String {
+    case qr = "CIQRCodeGenerator"
+    case code128 = "CICode128BarcodeGenerator"
+    case pdf417 = "CIPDF417BarcodeGenerator"
+    case aztec = "CIAztecCodeGenerator"
+}
 
 public extension UIImage {
+    static func barCodeFor(string: String, containingViewSize: CGSize? = nil, correctionLevel: String = "L", type: BarCode = .qr) -> UIImage? {
+        var strData: Data?
+        
+        switch type {
+        case .aztec, .pdf417, .qr:
+            strData = string.data(using: String.Encoding.isoLatin1)
+        case .code128:
+            strData = string.data(using: String.Encoding.ascii)
+        }
+        
+        guard let filter = CIFilter(name: type.rawValue), let stringData = strData else { return nil }
+
+        filter.setValue(stringData, forKey: "inputMessage")
+        filter.setValue(correctionLevel, forKey: "inputCorrectionLevel")
+        
+        guard let resultImage = filter.outputImage else { return nil }
+        
+        var scaleX = resultImage.extent.size.width
+        var scaleY = resultImage.extent.size.height
+        if let size = containingViewSize {
+            scaleX = size.width / resultImage.extent.size.width
+            scaleY = size.height / resultImage.extent.size.height
+        }
+        
+        let qrImage = resultImage.transformed(by: CGAffineTransform(scaleX: scaleX, y: scaleY))
+        let context = CIContext()
+        if let tempImage: CGImage = context.createCGImage(qrImage, from: qrImage.extent) {
+            return UIImage(cgImage: tempImage)
+        }
+
+        return nil
+    }
+    
 	static func QRImageFrom(string: String, containingViewSize: CGSize? = nil, correctionLevel: String = "L") -> UIImage? {
-		let stringData = string.data(using: String.Encoding.isoLatin1)
-        let filter = CIFilter(name: "CIQRCodeGenerator")
-		filter?.setValue(stringData, forKey: "inputMessage")
-		filter?.setValue(correctionLevel, forKey: "inputCorrectionLevel")
-		
-		guard let resultImage = filter?.outputImage else { return nil }
-		
-		var scaleX = resultImage.extent.size.width
-		var scaleY = resultImage.extent.size.height
-		if let size = containingViewSize {
-			scaleX = size.width / resultImage.extent.size.width
-			scaleY = size.height / resultImage.extent.size.height
-		}
-		
-		let qrImage = resultImage.transformed(by: CGAffineTransform(scaleX: scaleX, y: scaleY))
-		let context = CIContext()
-		if let tempImage: CGImage = context.createCGImage(qrImage, from: qrImage.extent) {
-			return UIImage(cgImage: tempImage)
-		}
-		return nil
+        return Self.barCodeFor(string: string, containingViewSize: containingViewSize, correctionLevel: correctionLevel, type: .qr)
 	}
 }
