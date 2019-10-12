@@ -2,7 +2,7 @@
 Lightweight framework for QR scanning and generation
 
 
-## � Requirements 
+## 📝 Requirements 
 
 * iOS 8.0+
 
