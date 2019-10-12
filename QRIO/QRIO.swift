@@ -13,10 +13,10 @@ import CoreImage
 open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 	fileprivate var session: AVCaptureSession?
 	fileprivate var previewLayer: AVCaptureVideoPreviewLayer?
-	
+    private var codeFrameView: UIView?
+
 	open var imageScanCompletionBlock: ((_ string: String) -> ())?
-	
-	
+
 	open func scanForQRImage(previewIn previewContainer: UIView? = nil, rectOfInterest: CGRect? = nil, completion: @escaping ((_ string: String) -> ())) {
 		let session = AVCaptureSession()
         self.session = session
@@ -44,6 +44,7 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 			previewLayer!.videoGravity = .resizeAspectFill
 			
 		}
+
 		DispatchQueue.global(qos: DispatchQoS.QoSClass.userInitiated).async { [weak self] in
 			self?.session?.startRunning()
 		}
@@ -51,6 +52,8 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 		if let rectOfInterest = rectOfInterest, let previewLayer = previewLayer {
 			output.rectOfInterest = previewLayer.metadataOutputRectConverted(fromLayerRect: rectOfInterest)
 		}
+        
+        highlightDetectedCode(in: previewContainer)
 	}
 	
 	open func metadataOutput(_ captureOutput: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
@@ -79,8 +82,20 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 		previewLayer?.removeFromSuperlayer()
 		previewLayer = nil
 	}
-}
+    
+    /// Function to display a green box around the detected Code
+    /// previewContainer - View in which the highlighted frame should be displayed
+    open func highlightDetectedCode(in previewContainer: UIView?) {
+        codeFrameView = UIView()
 
+        guard let codeFrameView = codeFrameView, let previewContainer = previewContainer else { return }
+
+        codeFrameView.layer.borderColor = UIColor.green.cgColor
+        codeFrameView.layer.borderWidth = 2
+        previewContainer.addSubview(codeFrameView)
+        previewContainer.bringSubviewToFront(codeFrameView)
+    }
+}
 
 public extension UIImage {
 	static func QRImageFrom(string: String, containingViewSize: CGSize? = nil, correctionLevel: String = "L") -> UIImage? {
