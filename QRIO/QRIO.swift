@@ -58,11 +58,18 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 	
 	open func metadataOutput(_ captureOutput: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
 		var QRCode: String?
-		for metadata in metadataObjects {
-			if metadata.type == AVMetadataObject.ObjectType.qr {
-				QRCode = (metadata as! AVMetadataMachineReadableCodeObject).stringValue
-			}
-		}
+		var metaDataObj: AVMetadataMachineReadableCodeObject?
+
+        for metadata in metadataObjects where metadata.type == AVMetadataObject.ObjectType.qr {
+            metaDataObj = metadata as? AVMetadataMachineReadableCodeObject
+            QRCode = metaDataObj?.stringValue
+        }
+
+        if let metaObj = metaDataObj {
+            let barCodeObject = previewLayer?.transformedMetadataObject(for: metaObj)
+            codeFrameView?.frame = barCodeObject?.bounds ?? .zero
+        }
+
 		if let code = QRCode {
 			imageScanCompletionBlock?(code)
 		}
