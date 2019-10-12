@@ -16,8 +16,14 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 	
 	open var imageScanCompletionBlock: ((_ string: String) -> ())?
 	
-	
-	open func scanForQRImage(previewIn previewContainer: UIView? = nil, rectOfInterest: CGRect? = nil, completion: @escaping ((_ string: String) -> ())) {
+	private let barCodeMetaType: [AVMetadataObject.ObjectType] = [
+        .qr,
+        .code128,
+        .pdf417,
+        .aztec
+    ]
+    
+	open func scanForBarcodeImage(previewIn previewContainer: UIView? = nil, rectOfInterest: CGRect? = nil, completion: @escaping ((_ string: String) -> ())) {
 		let session = AVCaptureSession()
         self.session = session
         guard let device = AVCaptureDevice.default(for: AVMediaType.video) else { return }
@@ -54,16 +60,16 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 	}
 	
 	open func metadataOutput(_ captureOutput: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
-		var QRCode: String?
-		for metadata in metadataObjects {
-			if metadata.type == AVMetadataObject.ObjectType.qr {
-				QRCode = (metadata as! AVMetadataMachineReadableCodeObject).stringValue
-			}
-		}
-		if let code = QRCode {
-			imageScanCompletionBlock?(code)
-		}
-	}
+        var QRCode: String?
+        for metadata in metadataObjects {
+            if barCodeMetaType.contains(metadata.type) {
+                QRCode = (metadata as! AVMetadataMachineReadableCodeObject).stringValue
+            }
+        }
+        if let code = QRCode {
+            imageScanCompletionBlock?(code)
+        }
+    }
 	
 	open func finish() {
 		imageScanCompletionBlock = nil
@@ -81,28 +87,61 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 	}
 }
 
-
 public extension UIImage {
-	static func QRImageFrom(string: String, containingViewSize: CGSize? = nil, correctionLevel: String = "L") -> UIImage? {
-		let stringData = string.data(using: String.Encoding.isoLatin1)
-        let filter = CIFilter(name: "CIQRCodeGenerator")
-		filter?.setValue(stringData, forKey: "inputMessage")
-		filter?.setValue(correctionLevel, forKey: "inputCorrectionLevel")
-		
-		guard let resultImage = filter?.outputImage else { return nil }
-		
-		var scaleX = resultImage.extent.size.width
-		var scaleY = resultImage.extent.size.height
-		if let size = containingViewSize {
-			scaleX = size.width / resultImage.extent.size.width
-			scaleY = size.height / resultImage.extent.size.height
-		}
-		
-		let qrImage = resultImage.transformed(by: CGAffineTransform(scaleX: scaleX, y: scaleY))
-		let context = CIContext()
-		if let tempImage: CGImage = context.createCGImage(qrImage, from: qrImage.extent) {
-			return UIImage(cgImage: tempImage)
-		}
-		return nil
-	}
+    private static func barcode(from data: Data, filter: CIFilter, containingViewSize: CGSize? = nil) -> UIImage? {
+
+        filter.setValue(data, forKey: "inputMessage")
+
+        guard let resultImage = filter.outputImage else { return nil }
+        
+        var scaleX = resultImage.extent.size.width
+        var scaleY = resultImage.extent.size.height
+        if let size = containingViewSize {
+            scaleX = size.width / resultImage.extent.size.width
+            scaleY = size.height / resultImage.extent.size.height
+        }
+        
+        let qrImage = resultImage.transformed(by: CGAffineTransform(scaleX: scaleX, y: scaleY))
+        let context = CIContext()
+        if let tempImage: CGImage = context.createCGImage(qrImage, from: qrImage.extent) {
+            return UIImage(cgImage: tempImage)
+        }
+
+        return nil
+    }
+
+    static func pdf417CodeFrom(string: String, containingViewSize: CGSize? = nil, correctionLevel: NSNumber = NSNumber(integerLiteral: 0)) -> UIImage? {
+
+        guard let stringData = string.data(using: .isoLatin1),
+            let filter = CIFilter(name: "CIPDF417BarcodeGenerator") else { return nil }
+
+        filter.setValue(correctionLevel, forKey: "inputCorrectionLevel")
+        return barcode(from: stringData, filter: filter, containingViewSize: containingViewSize)
+    }
+
+    static func barcode128From(string: String, containingViewSize: CGSize? = nil) -> UIImage? {
+
+        guard let stringData = string.data(using: .ascii),
+            let filter = CIFilter(name: "CICode128BarcodeGenerator") else { return nil }
+
+        return barcode(from: stringData, filter: filter, containingViewSize: containingViewSize)
+    }
+
+    static func aztecCodeFrom(string: String, containingViewSize: CGSize? = nil, correctionLevel: NSNumber = NSNumber(integerLiteral: 23)) -> UIImage? {
+        
+        guard let stringData = string.data(using: .isoLatin1),
+            let filter = CIFilter(name: "CIAztecCodeGenerator") else { return nil }
+
+        filter.setValue(correctionLevel, forKey: "inputCorrectionLevel")
+        return barcode(from: stringData, filter: filter, containingViewSize: containingViewSize)
+    }
+
+    static func QRImageFrom(string: String, containingViewSize: CGSize? = nil, correctionLevel: String = "L") -> UIImage? {
+        
+        guard let stringData = string.data(using: .isoLatin1),
+            let filter = CIFilter(name: "CIQRCodeGenerator") else { return nil }
+
+        filter.setValue(correctionLevel, forKey: "inputCorrectionLevel")
+        return barcode(from: stringData, filter: filter, containingViewSize: containingViewSize)
+    }
 }
