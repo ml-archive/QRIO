@@ -7,7 +7,7 @@ Pod::Spec.new do |spec|
   spec.summary      = "Lightweight framework for QR scanning and generation"
   spec.homepage     = "https://github.com/nodes-ios/QRIO"
 
-  spec.author       = { 'Name' => 'chco@nodes.dk' }
+  spec.author       = { "Nodes Agency - iOS" => "ios@nodes.dk" }
   spec.license      = { :type => 'MIT', :file => './LICENSE' }
 
   spec.platform     = :ios
