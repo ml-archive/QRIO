@@ -38,12 +38,12 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 		imageScanCompletionBlock = completion
 		
 		if let previewContainer = previewContainer {
-			previewLayer = AVCaptureVideoPreviewLayer(session: session)
-			previewContainer.layer.addSublayer(previewLayer!)
-			previewLayer!.frame = previewContainer.bounds
-			previewLayer!.videoGravity = .resizeAspectFill
-			
-		}
+            let previewLayer = AVCaptureVideoPreviewLayer(session: session)
+            previewContainer.layer.addSublayer(previewLayer)
+            previewLayer.frame = previewContainer.bounds
+            previewLayer.videoGravity = .resizeAspectFill
+            
+        }
 		DispatchQueue.global(qos: DispatchQoS.QoSClass.userInitiated).async { [weak self] in
 			self?.session?.startRunning()
 		}
@@ -57,7 +57,7 @@ open class QRInput: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 		var QRCode: String?
 		for metadata in metadataObjects {
 			if metadata.type == AVMetadataObject.ObjectType.qr {
-				QRCode = (metadata as! AVMetadataMachineReadableCodeObject).stringValue
+				QRCode = (metadata as? AVMetadataMachineReadableCodeObject)?.stringValue
 			}
 		}
 		if let code = QRCode {
