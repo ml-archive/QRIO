@@ -2,7 +2,7 @@
 Lightweight framework for QR scanning and generation
 
 
-## 📝 Requirements 
+## 📝 Requirements
 
 * iOS 8.0+
 
@@ -11,6 +11,13 @@ Lightweight framework for QR scanning and generation
 ### Carthage
 ~~~
 github "nodes-ios/QRIO"
+~~~
+
+
+### CocoaPods
+~~~
+pod 'QRIO', :git => 'git@github.com:nicktrienensfuzz/QRIO.git', :branch => "feature/podspec"
+
 ~~~
 
 ## 💻 Usage
@@ -22,7 +29,7 @@ It's as easy as
 let image = UIImage.QRImageFrom(string: "Hello World!")
 ~~~
 
-This will return a UIImage: 
+This will return a UIImage:
 
 ![HelloWorldQR](https://raw.githubusercontent.com/nodes-ios/QRIO/master/HelloWorldQR.png)
 
@@ -51,7 +58,7 @@ func scanForQR() {
 }
 ~~~
 
-You can optionally pass a view to display the preview video in, and also a rect of interest to focus the detection. 
+You can optionally pass a view to display the preview video in, and also a rect of interest to focus the detection.
 
 ~~~swift
 let qrio = QRInput()
@@ -63,7 +70,7 @@ func scanForQR() {
 }
 ~~~
 
-And that's it! If you need to end QR scanning, you can call `finish()` on your QRIO object. 
+And that's it! If you need to end QR scanning, you can call `finish()` on your QRIO object.
 
 
 ## 👥 Credits
