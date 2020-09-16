@@ -24,7 +24,7 @@ pod 'nodes-ios/QRIO'
 It's as easy as
 
 ~~~swift
-let image = UIImage.QRImageFromString("Hello World!")
+let image = UIImage.QRImageFrom(string: "Hello World!")
 ~~~
 
 This will return a UIImage:
@@ -34,9 +34,9 @@ This will return a UIImage:
 You can also adjust the size of the generated image, which will give you a clearer image, and the correction level, which adds more error protection, by using the optional parameters:
 
 ~~~swift
-let image = UIImage.QRImageFromString("Hello World!",
+let image = UIImage.QRImageFrom(string: "Hello World!",
 				containingViewSize: imageView.bounds.size,
-					correctionLevel: "M")
+				correctionLevel: "M")
 ~~~
 
 ![HelloWorldQR](https://raw.githubusercontent.com/nodes-ios/QRIO/master/HelloWorldQR2.png)
