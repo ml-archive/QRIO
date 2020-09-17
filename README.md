@@ -4,13 +4,18 @@ Lightweight framework for QR scanning and generation
 
 ## 📝 Requirements 
 
-* iOS 8.0+
+* iOS 9.0+
 
 ## 📦 Installation
 
 ### Carthage
 ~~~
 github "nodes-ios/QRIO"
+~~~
+
+### Cocoa Pods
+~~~
+pod "QRIO"
 ~~~
 
 ## 💻 Usage
